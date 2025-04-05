@@ -1,0 +1,50 @@
+# .github/workflows/deploy.yml
+name: Deploy Vite App to GitHub Pages
+
+on:
+  # Runs on pushes targeting the 'source' branch
+  push:
+    branches:
+      - source # Or 'develop', or whichever branch holds your source code
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write # Required to push to the main branch
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️ Source Branch
+        uses: actions/checkout@v4
+        with:
+          ref: source # Checkout the branch specified in 'on.push.branches'
+
+      - name: Set up Node.js ⚙️
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use your desired Node.js version
+          cache: 'npm' # Cache npm dependencies
+
+      - name: Install Dependencies 🔧
+        run: npm ci # Use 'ci' for faster, more reliable installs in CI
+
+      - name: Build Project 🔨
+        # Ensure base: '/' is set in vite.config.js
+        run: npm run build
+
+      - name: Deploy 🚀 to main branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist  # The folder the action should deploy.
+          publish_branch: main # Deploy to the main branch for username.github.io
+          force_orphan: true   # Overwrite the main branch history with just the build output
+          # Optional: Customize commit details
+          # user_name: 'github-actions[bot]'
+          # user_email: 'github-actions[bot]@users.noreply.github.com'
+          # commit_message: 'Deploy Vite app build to main branch'
